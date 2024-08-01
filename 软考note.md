@@ -1189,4 +1189,157 @@ P189 表8-2
 测试和验证边界安全策略是否正常执行。通过模拟攻击、渗透测试等手段，检查防火墙的配置是否能够有效地防护不符合安全策略的流量，并确保合法流量能够顺利通过。
 
 ##### 第七步：运行和维护防火墙
-最后，确保防火墙的长期稳定运行和维护。定期更新防火墙规则和固件，监控网络活动日志，及时响应安全事件，并根据需求调整和优化防火墙配置
+最后，确保防火墙的长期稳定运行和维护。定期更新防火墙规则和固件，监控网络活动日志，及时响应安全事件，并根据需求调整和优化防火墙配置.
+
+### IPtables防火墙应用参考
+P193 原文：`https://www.thegeekstuff.com/2011/06/iptables-rules-examples/`
+```yaml
+Flush Rules: Remove all existing rules with iptables -F.
+Default Policy: Set default policies for INPUT, FORWARD, and OUTPUT chains to DROP.
+Block IP: Block a specific IP with iptables -A INPUT -s [IP] -j DROP.
+Allow SSH: Allow all SSH connections on port 22.
+Restrict SSH: Allow SSH from a specific network.
+Allow HTTP/HTTPS: Allow HTTP (port 80) and HTTPS (port 443) traffic.
+Multiport: Use multiport to allow multiple ports (SSH, HTTP, HTTPS).
+Outgoing SSH: Allow outgoing SSH connections.
+Restrict Outgoing SSH: Allow outgoing SSH only to a specific network.
+Outgoing HTTPS: Allow outgoing HTTPS traffic.
+Load Balancing: Load balance incoming traffic using nth extension.
+Allow Ping: Allow ping (ICMP echo request and reply).
+Ping from Inside: Allow ping from inside to outside.
+Loopback: Allow full loopback access.
+Internal to External: Allow internal network to communicate with external.
+DNS: Allow outgoing DNS connections.
+NIS: Allow NIS connections.
+Rsync: Allow rsync from a specific network.
+MySQL: Allow MySQL connections from a specific network.
+Email Traffic: Allow Sendmail or Postfix traffic.
+IMAP: Allow IMAP and IMAPS traffic.
+POP3: Allow POP3 and POP3S traffic.
+Prevent DoS: Use limit extension to prevent DoS attacks.
+Port Forwarding: Forward traffic from one port to another.
+Log Dropped Packets: Log and drop packets in the LOGGING chain.
+```
+
+8.1
+---
+### Web应用防火墙应用参考
+OWASP核心规则集
+CRS核心规则集
+CRS3.0提供13种常见的攻击规则类型。
+
+### 包过滤防火墙应用参考
+ACL配置例子：
+- 删除现有的ACL:
+```perl
+no access-list 100
+```
+这行命令删除编号为 100 的现有 ACL。
+
+- 创建新的ACL:
+```r
+access-list 100 deny ip 14.2.6.0 0.0.0.255 any log
+```
+这行命令创建一个新的ACL条目，编号为 100，拒绝源地址为 14.2.6.0/24（子网掩码 255.255.255.0）的任何 IP 数据包，并记录日志。
+
+- 拒绝特定的IP地址:
+```bash
+access-list 100 deny ip host 14.x.y.z host 14.x.y.z log
+```
+拒绝来自特定主机 14.x.y.z 的 IP 数据包，并记录日志。
+
+- 拒绝本地和私有地址:
+```r
+access-list 100 deny ip 127.0.0.0 0.255.255.255 any log
+access-list 100 deny ip 10.0.0.0 0.255.255.255 any log
+access-list 100 deny ip 0.0.0.0 0.255.255.255 any log
+access-list 100 deny ip 172.16.0.0 0.15.255.255 any log
+access-list 100 deny ip 192.168.0.0 0.0.255.255 any log
+access-list 100 deny ip 192.0.2.0 0.0.0.255 any log
+access-list 100 deny ip 169.254.0.0 0.0.255.255 any log
+```
+拒绝常见的私有网络和本地网络地址，防止内部网络的地址被伪装为外部流量。
+
+- 拒绝广播和多播地址
+```r
+access-list 100 deny ip 224.0.0.0 15.255.255.255 any log
+access-list 100 deny ip any host 14.2.6.255 log
+access-list 100 deny ip any host 14.2.6.0 log
+```
+这些规则拒绝多播和广播地址的流量，记录日志。
+
+- 允许特定的TCP和ICMP流量:
+```r
+access-list 100 permit tcp any 14.2.6.0 0.0.0.255 established
+access-list 100 permit icmp any any echo log
+access-list 100 deny icmp any any redirect log
+access-list 100 deny icmp any any mask-request log
+access-list 100 permit icmp any 14.2.6.0 0.0.0.255
+```
+允许建立连接的 TCP 流量到 14.2.6.0/24 网络。
+允许 ICMP echo 请求（ping），但拒绝 ICMP 重定向和掩码请求，并记录日志。
+
+- 特定协议的允许与拒绝:
+```r
+access-list 100 permit ospf 14.1.0.0 0.0.255.255 host 14.x.y.z
+access-list 100 deny tcp any any range 6000 6063 log
+access-list 100 deny tcp any any eq 6567 log
+```
+允许 OSPF 协议流量到特定的主机 14.x.y.z。
+拒绝 TCP 端口范围 6000 到 6063 以及端口 6567 的流量，并记录日志。
+
+Configure Commonly Used IP ACLs: `https://www.cisco.com/c/en/us/support/docs/ip/access-lists/26448-ACLsamples.html#toc-hId--707141680`
+
+《Cisco ASA - All-in-one Next-generation Firewall, IPS and VPN Services》 P229
+
+### 工控防火墙应用参考
+
+# 本章总结
+防火墙概念、工作原理、实现技术、评价指标。
+防火墙防御体系结构、应用案例。
+
+# 其他材料补充
+## 1
+`https://mp.weixin.qq.com/s/KTSJaY6Q7iCf-UpnKuAOpg`
+
+### 安全区域
+安全区域是防火墙中重要的概念，防火墙可以将不同的接口划分到不同的安全区域。
+一个安全区域可以说就是***若干个接口的集合***，一个安全区域里面的接口具有相同的安全属性。
+
+- 受信trust：内网终端用户
+- 非受信untrust：Internet
+- 非军事化区域DMZ：内网服务器
+- 本地区域local：设备及设备接口本身
+
+### 安全策略
+安全策略是防火墙中对流量转发、以及对流量中的内容进行安全一体化检测的策略。
+安全策略由匹配条件、动作、安全配置文件组成。
+- 匹配条件包括五元组（源地址、目的地址、源端口、目的端口、协议）、VLAN、源安全区域、目的安全区域、用户、时间段等。
+- 动作，permit/deny。permit👉内容安全检测。
+- 安全配置文件
+
+#### 安全策略匹配过程
+安全策略的匹配按照策略列表顺序执行，从上往下逐条匹配，如果匹配了某条策略，将不再往下匹配。
+***需要优先配置精确的安全策略，然后再配置粗略的安全策略。***
+
+### 会话表
+会话表用来记录TCP、UDP、ICMP等协议连接状态的表项，是防火墙转发报文的重要依据；
+   
+防火墙基于“状态”转发报文：
+1. 只对首包或者少量报文进行检测然后确认一个连接状态；（会话表）
+2. 后续大量的报文根据连接状态进行控制；  
+
+会话表记录大量连接状态。
+
+#### 会话表的创建
+防火墙在开启状态检测情况下，只有首包会创建会话表项，后续报文匹配会话表即可转发；
+
+### 会话表老化时间
+系统会在一条表项连续未被匹配一段时间后，将其删除，即会话表项已经老化。
+
+### 长连接
+为特殊流量设定超长老化时间。
+
+## Server-map
+由于会话表对哪些报文属于同一条流量的标准过于严格，会导致一些特殊协议不能正确匹配会话表。Server-map表可以解决这一问题。
+
