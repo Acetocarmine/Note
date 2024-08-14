@@ -2023,3 +2023,55 @@ P(\text{Intrusion} \mid ES) = P(ES \mid \text{Intrusion}) \times \frac{P(\text{I
 \[
 P(ES) = [P(ES \mid \text{Intrusion}) - P(ES \mid \neg \text{Intrusion})] \times P(\text{Intrusion}) + P(ES \mid \neg \text{Intrusion})
 \]
+
+
+先验概率 是在统计学和概率论中的一个重要概念，它表示在考虑新的证据或数据之前，对某个事件发生的初步估计或相信的程度。比如根据历史数据或统计模型。
+
+#### 基于状态迁移的误用检测方法
+基于状态迁移的误用检测方法主要通过分析系统状态的变化来检测入侵行为。状态迁移方法利用状态图表示攻击特征，不同状态刻画了系统某一时刻的特征。初始状态对应于入侵开始前的系统状态，危险状态对应于已成功入侵时刻的系统状态。初始状态与危险状态之间的迁移可能有一个或多个中间状态。
+基于状态迁移的误用检测方法通过检查系统的状态变化发现系统中的入侵行为。采用该方法的 IDS 有 STAT（State Transition Analysis Technique）和 USTAT（State Transition Analysis Tool for UNIX）。
+
+- 优点：
+能够识别复杂攻击路径：通过跟踪状态迁移过程，可以发现需要多步操作才能完成的复杂攻击。
+- 问题：
+对未定义的状态迁移路径不敏感：如果攻击行为使用了一条没有被事先定义的路径，那么系统可能无法检测到。
+状态定义和分析较为复杂：系统的每一个可能状态都需要被明确定义，并且在实际应用中，系统可能存在大量的状态和迁移路径，增加了分析的难度。
+
+#### 基于键盘监控的误用检测方法
+假设入侵行为对应特定的击键序列模式，然后监测用户的击键模式，并将这一模式与入侵模式匹配，从而发现入侵行为。入侵者可能在尝试绕过安全机制时，输入一系列常见的命令。
+如果没有击键语义分析，用户使用别名（例如 Korn shell）很容易欺骗这种检测技术。
+
+#### 基于规则的误用检测方法
+将攻击行为或入侵模式表示成一种规则，只要符合规则就认定它是一种入侵行为。
+
+这些规则通常描述了攻击者在尝试入侵系统时的典型行为模式，例如某种特定的数据包序列、特定命令的执行等。
+
+Snort 是典型的基于规则的误用检测方法的应用实例。Snort 是一种开源的网络入侵检测系统，广泛使用基于规则的误用检测方法。
+
+Snort开源找到的例子：
+##### 检测TCP SYN Flood攻击
+向目标服务器发送大量的TCP SYN请求而不完成三次握手.
+```bash
+alert tcp any any -> $HOME_NET 80 (msg:"Possible TCP SYN Flood"; flags:S; threshold:type both, track by_src, count 20, seconds 10; sid:1000001;)
+```
+- `alert tcp any any -> $HOME_NET 80`：这一部分定义了规则的基本匹配条件。它表示，当任何来源 (any) 的任何端口 (any) 发送 TCP 数据包到 `$HOME_NET`（内部网络）中的端口80（通常是HTTP服务）时，规则将被触发。
+
+- `msg:"Possible TCP SYN Flood"`：这是当规则匹配时生成的警报信息，表示可能存在 TCP SYN Flood 攻击。
+
+- `flags:S`：这是一个标志位条件，表示检测带有 SYN 标志的 TCP 数据包。
+
+- `threshold:type both, track by_src, count 20, seconds 10`：这是一个阈值设置，表示在10秒内如果同一来源的IP地址发送超过20个带有 SYN 标志的数据包，将触发报警。
+
+- `sid:1000001;`：这是规则的唯一标识符（Snort ID），用于区分不同的规则。
+
+##### 检测用户登录失败次数过多
+设置一个规则来检测某个用户在短时间内多次失败登录的情况，这可能是暴力破解密码的表现。
+
+```bash
+alert tcp any any -> $HOME_NET 22 (msg:"Possible SSH Brute Force Attempt"; content:"Failed password"; nocase; threshold:type both, track by_src, count 5, seconds 60; sid:1000002;)
+```
+- `alert tcp any any -> $HOME_NET 22`：规则匹配任何源发送到 $HOME_NET（内部网络）中22端口（SSH服务）的TCP数据包。
+- `msg:"Possible SSH Brute Force Attempt"`：匹配后触发的报警信息，表示可能存在SSH暴力破解尝试。
+- `content:"Failed password"; nocase;`：规则会在数据包中查找"Failed password"的文本字符串，nocase表示忽略大小写。
+- `threshold:type both, track by_src, count 5, seconds 60`：设置了一个阈值，表示如果在60秒内，同一来源的IP地址发送了5次失败的密码尝试，将触发报警。
+- `sid:1000002;`：规则的唯一标识符。
