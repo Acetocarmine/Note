@@ -3282,6 +3282,7 @@ traffic-policy deny-wannacry inbound  #这条命令将 deny-wannacry 策略应�
 traffic-policy deny-wannacry outbound
 ```
 
+### todo问题
 todo：
 公司应急演练文件对着看下
 等保，对系统文件的要求
@@ -3306,6 +3307,9 @@ telnet 是一种网络协议，也是一个命令行工具，用于通过网络�
 例子：
 `telnet 192.168.1.100`
 尝试连接到 IP 地址为 192.168.1.100 的服务器。
+
+scp 22
+rsync 873 *
 
 ##### in.telnetd
 in.telnetd 是 Telnet 服务的后台守护进程（daemon）。它在服务器上监听 Telnet 连接的请求，一旦有客户端连接，就启动会话并为其提供远程登录服务。
@@ -3384,6 +3388,81 @@ syslogd 是 Unix 系统中负责收集并管理系统日志信息的守护进程
 通常不需要手动运行，由系统自动启动并负责日志收集和存储。
 例如，查看日志文件：
 `tail -f /var/log/syslog`
+
+todo
+`telnet`问题
+Telnet 是一种基于 TCP 的远程登录协议，主要用于远程管理和控制设备。它允许用户连接到远程主机并在其上执行命令，就像本地操作一样。
+Telnet 工作在 `应用层（OSI模型的第七层）`，并依赖于 `传输层` 的 `TCP` 协议。
+Telnet 默认使用 TCP 端口 23。
+输入 exit 或 quit 退出会话并关闭 Telnet 连接。
+
+Ping 发送 ICMP Echo 请求到目标主机，目标主机收到请求后会返回 ICMP Echo 回复。
+Ping 工作在 网络层（OSI模型的第三层），使用的是 ICMP协议 而不是 TCP 或 UDP。
+Ping 不使用端口，因为 ICMP 是一种网络层协议，而端口是传输层的概念。
+
+
+
+`netstat`问题
+`-a` 参数：显示所有连接和监听端口
+`-n` 参数：以数字形式显示地址和端口
+`-t` 参数：显示 TCP 连接
+`-u` 参数：显示 UDP 连接
+`-p` 参数：显示与连接相关的程序（仅限 root 权限）
+`-r` 参数：显示路由表
+`-i` 参数：显示网络接口信息
+
+常用：
+检查开放端口 使用 netstat -an 可以检查系统中有哪些端口处于监听状态：
+`netstat -an | grep LISTEN`
+查看服务器是否在特定端口上正常监听请求。
+
+State列表示连接的状态，比如：
+`LISTEN`：服务器端口正在监听外部连接。
+`ESTABLISHED`：连接已经建立。
+`TIME_WAIT`：连接已经关闭，正在等待一段时间后释放资源。
+
+
+`netstat`的输出第二段：
+```bash
+Active UNIX domain sockets (servers and established)
+Proto RefCnt Flags       Type       State         I-Node   Path
+unix  2      [ ACC ]     STREAM     LISTENING     15114    /var/run/vmware/guestServicePipe
+unix  2      [ ACC ]     STREAM     LISTENING     14115    /var/run/lsm/ipc/sim
+```
+UNIX 域套接字的输出
+
+在 Linux 系统中，UNIX 域套接字（UNIX Domain Sockets）是一种用于本地进程间通信的机制，不需要通过网络协议栈（如 TCP/IP）传输数据。这种套接字只在本地机器上使用，通信更高效，因为不涉及网络传输。
+
+`Socket`(“进程间通信的端点”)是应用层与传输层之间的接口，应用程序可以通过它来发送和接收数据。
+
+- Proto：协议类型
+unix 表示这是一个 UNIX 域套接字。
+
+- RefCnt：引用计数
+这是当前有多少个进程正在引用（使用）这个套接字。
+2 表示有两个进程正在使用这些套接字。
+
+- Flags：标志（Flags）
+[ ACC ] 表示这个套接字可以接受新连接。这通常出现在 监听（LISTENING）状态的服务器端套接字上。
+ACC 是 Accepting Connections 的缩写，意味着这个套接字正在监听并准备接受传入的连接。
+
+- Type：套接字类型
+STREAM 表示这是一个流式套接字，类似于 TCP 的数据流连接。这种类型的套接字用于有序的、可靠的数据传输，常用于需要持续双向通信的场景。
+UNIX 域套接字有不同的类型，常见的有 STREAM（流）和 DGRAM（数据报）。STREAM 类型适用于类似于 TCP 的有连接通信，而 DGRAM 类似于 UDP 的无连接通信。
+
+- State：状态
+LISTENING 表示这个套接字正在监听连接请求。这是服务器端套接字的典型状态，它意味着该套接字正在等待客户端连接。
+引用的两个套接字都处于 LISTENING 状态，表明它们是服务器进程，用于接收其他进程的连接。
+
+- I-Node：文件节点号
+UNIX 域套接字本质上是文件系统中的文件，因此它们有自己的节点号（I-Node）。
+
+- Path：套接字文件路径
+
+tcp6却显示ipv4地址：
+    tcp6 的确表示该连接使用的是 IPv6 协议栈，但是由于 兼容性原因，有时会显示 IPv4 格式的地址。这种现象称为 IPv4 映射 IPv6 地址（IPv4-mapped IPv6 addresses）
+    tcp6 表示该套接字是使用 IPv6 协议栈创建的。系统在配置了 IPv6 后，允许 IPv6 套接字兼容 IPv4 地址，从而实现 双栈兼容，支持同时使用 IPv4 和 IPv6。
+
 
 ---
 之前的问题：
@@ -3495,6 +3574,17 @@ DNS服务器响应，返回www.example.com对应的IP地址（如192.168.1.100�
         - 连接重置攻击（RST Injection）：攻击者可以发送伪造的TCP RST重置包，强制关闭客户端与服务器之间的连接。
         - 会话劫持或中断：在连接关闭之前，如果攻击者已经劫持会话，可以继续操作服务器，或者恶意中断会话。
     - 攻击效果：攻击者可能通过伪造的RST包强制中断连接，使用户无法完成操作（如支付、提交数据等），或者继续利用劫持的会话执行未授权的操作。
+
+todo:
+1. 看nat策略和waf配置情况，登防火墙和waf看策略
+2. IPS上的策略，更新规则库，过段时间后看看命中情况
+3. waf上的规则库，优化，？起测试站点，收集业务点上的包（包括正常的和攻击的），在测试点上发包，模拟正常和攻击情况，观察新的规则库的情况，优化策略。
+
+---
+# 防火墙补充
+
+
+
 
 ---
 
